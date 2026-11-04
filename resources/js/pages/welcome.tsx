@@ -29,7 +29,7 @@ const FUNCIONES = [
     {
         icono: Route,
         titulo: 'Rutas más informadas',
-        texto: 'Compara alternativas según iluminación, flujo peatonal y comercios abiertos reportados.',
+        texto: 'Compara alternativas de ruta peatonal antes de salir y decide cuál prefieres.',
     },
     {
         icono: Flame,
@@ -43,8 +43,8 @@ const FUNCIONES = [
     },
     {
         icono: Clock,
-        titulo: 'Horarios con más flujo',
-        texto: 'Franjas con más gente en la calle, siempre con su nivel de confianza.',
+        titulo: 'Horarios con más y menos reportes',
+        texto: 'A qué horas se reportan más incidentes, con su tamaño de muestra y nivel de confianza.',
     },
     {
         icono: ShieldAlert,
@@ -59,7 +59,7 @@ const FUNCIONES = [
     {
         icono: BellRing,
         titulo: 'Alerta por inactividad',
-        texto: 'Si te detienes y no respondes, avisamos a tus contactos tras darte tiempo de cancelar.',
+        texto: 'Si te detienes y no respondes, primero te avisamos a ti y luego a tus contactos.',
     },
     {
         icono: BarChart3,
@@ -471,7 +471,8 @@ export default function Welcome() {
                         AcompañaHer
                     </p>
                     <p className="text-warm-white/70">
-                        Prototipo MVP · Los datos mostrados son de ejemplo.
+                        MVP · Las cifras provienen de reportes verificados de la
+                        comunidad.
                     </p>
                     <a
                         href="#inicio"

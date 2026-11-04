@@ -10,14 +10,14 @@ Aplicación web para ayudar a las mujeres a tomar decisiones informadas en sus d
 | --- | --- |
 | Rutas seguras | Compara alternativas de ruta peatonal con tiempo, distancia y explicación de la recomendación. |
 | Mapa de calor | Celdas de 500 m con reportes **verificados** nocturnos de los últimos 30 días. Oculta grupos de menos de 5 reportes. |
-| Horarios seguros | Franjas horarias con mayor flujo peatonal y nivel de confianza. |
+| Horarios | Distribución por hora de los reportes verificados, con tamaño de muestra y confianza. Mide incidencia observada, no flujo peatonal. |
 | Reportes ciudadanos | Reporte con ubicación, categoría y opción anónima, más bandeja de moderación. |
 | Botón SOS | Acceso rápido a números de emergencia y a contactos de confianza. |
-| Acompañamiento | Ubicación compartida en vivo con contactos autorizados durante un trayecto. |
-| Alerta por inactividad | Aviso escalonado a contactos si la usuaria se detiene y no confirma que está bien. |
-| Dashboard comunitario | Estadísticas agregadas y anónimas por zona. |
+| Acompañamiento | Ubicación en vivo compartida con contactos mediante un enlace privado y revocable, sin que ellos necesiten cuenta. |
+| Alerta por inactividad | Aviso previo a la usuaria y, si no responde, notificación Web Push a sus contactos. Con pausa voluntaria y registro de entrega. |
+| Dashboard comunitario | Estadísticas agregadas y anónimas de reportes verificados (categorías, tendencia mensual), con umbral de privacidad. |
 
-Algunas pantallas son todavía prototipos con datos de ejemplo (por ejemplo `/horarios` y `/comunidad`).
+AcompañaHer es una **PWA**: se puede instalar en el teléfono, tiene una página sin conexión con acceso al 123 y recibe notificaciones push. Las ocho funciones usan datos reales del servidor; no queda ninguna simulada.
 
 ## Stack
 
@@ -25,6 +25,7 @@ Algunas pantallas son todavía prototipos con datos de ejemplo (por ejemplo `/ho
 - **Frontend:** React 19 + TypeScript con Inertia.js 3, Tailwind CSS 4, Radix UI, Leaflet para los mapas. Rutas tipadas con Laravel Wayfinder.
 - **Base de datos:** PostgreSQL 16 con PostGIS 3.
 - **Herramientas:** Vite (Vite+), Pest, Larastan/PHPStan, Laravel Pint.
+- **PWA y notificaciones:** manifest, service worker propio y Web Push con claves VAPID (`minishlink/web-push`).
 - **Servicios externos:** teselas de OpenStreetMap y motor de rutas peatonales OSRM (FOSSGIS).
 
 ## Requisitos
@@ -88,7 +89,9 @@ Todo reporte demo empieza con `[DEMO]` y las cuentas usan el dominio `@demo.ruta
 | `npm run types:check` | Comprueba tipos de TypeScript. |
 | `npm run check` | Lint y formato del frontend. |
 | `npm run build` | Compila los assets de producción. |
-| `php artisan wayfinder:generate` | Regenera las rutas tipadas para el frontend. |
+| `php artisan wayfinder:generate --with-form` | Regenera las rutas tipadas para el frontend. |
+| `php artisan webpush:keys --write` | Genera las claves VAPID y las guarda en `.env`. |
+| `php artisan journeys:process-alerts` | Detecta inactividad, escala alertas y cierra trayectos abandonados (corre cada minuto). |
 
 Los tests usan una base distinta (`camina_segura_testing`); el script `database/postgresql-init.sh` la crea al iniciar el contenedor.
 
@@ -122,6 +125,9 @@ Variables propias de la aplicación (ver `.env.example`):
 | `HEATMAP_NIGHT_START_HOUR` / `HEATMAP_NIGHT_END_HOUR` | Franja nocturna del mapa de calor (20 a 2). |
 | `MAP_TILE_URL` | Proveedor de teselas. |
 | `WALKING_ROUTER_URL` | Motor OSRM de rutas peatonales. |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Claves de Web Push. Se generan con `php artisan webpush:keys --write`. |
+| `VAPID_SUBJECT` | Contacto del remitente de push (`mailto:...`). |
+| `JOURNEY_MAX_HOURS` | Duración máxima de un acompañamiento antes de cerrarse solo (por defecto 12). |
 
 El registro **no exige verificación de correo**: al crear la cuenta se entra directo. La autenticación en dos pasos y las llaves de acceso son opcionales desde Ajustes → Seguridad.
 
@@ -130,6 +136,9 @@ El registro **no exige verificación de correo**: al crear la cuenta se entra di
 - Los contactos de emergencia se guardan **cifrados**.
 - Los reportes anónimos no se asocian a ninguna cuenta y el mapa solo muestra agregados por celda.
 - Los trayectos y sus ubicaciones se eliminan 24 horas después de cerrarse (`model:prune` programado cada minuto).
+- Los contactos ven el trayecto con un enlace privado cuyo secreto solo se guarda como hash; caduca y se puede revocar. Solo reciben ubicación mientras el trayecto está activo.
+- Las suscripciones push solo se aceptan de los servicios de los navegadores (lista permitida), para evitar peticiones a direcciones arbitrarias.
+- Las alertas no se marcan como enviadas sin confirmación: el registro distingue entregada, fallida y sin dispositivo.
 - Autorización por roles, límites de peticiones en los endpoints sensibles y validación de que las coordenadas estén dentro de la cobertura.
 - El tratamiento de datos de ubicación debe revisarse frente a la Ley 1581 de 2012 antes de operar con usuarias reales.
 
@@ -148,9 +157,11 @@ php artisan optimize
 
 Además se necesitan:
 
-- Un worker de colas: `php artisan queue:work`, gestionado con systemd o Supervisor.
+- Un worker de colas: `php artisan queue:work`, gestionado con systemd o Supervisor. Envía las notificaciones push de las alertas.
 - El scheduler cada minuto vía cron: `php artisan schedule:run`.
-- `APP_ENV=production`, `APP_DEBUG=false` y HTTPS. Las llaves de acceso (passkeys) y la geolocalización del navegador solo funcionan en contextos seguros.
+- `APP_ENV=production`, `APP_DEBUG=false` y HTTPS. Las llaves de acceso (passkeys), la geolocalización, el service worker y las notificaciones push solo funcionan en contextos seguros.
+- Claves VAPID generadas (`php artisan webpush:keys --write`). Sin ellas, las alertas se registran como no entregadas.
+- Servir `/sw.js` sin caché larga (`Cache-Control: no-cache`) para que las actualizaciones del service worker lleguen.
 - Permisos de escritura de `storage/` y `bootstrap/cache/` para el usuario de PHP-FPM, y `.env` legible por ese mismo usuario.
 - En producción no se instalan dependencias de desarrollo: Faker y las factories no están disponibles.
 

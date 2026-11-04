@@ -7,7 +7,7 @@ export default function AppLogo() {
 
     return (
         <>
-            <div className="bg-purple text-warm-white flex aspect-square size-8 items-center justify-center rounded-xl shadow-sm">
+            <div className="flex aspect-square size-8 items-center justify-center rounded-xl bg-purple text-warm-white shadow-sm">
                 <AppLogoIcon className="size-5 fill-current" />
             </div>
             <div className="ml-1 grid flex-1 text-left text-sm">

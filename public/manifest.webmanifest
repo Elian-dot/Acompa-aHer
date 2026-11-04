@@ -1,0 +1,49 @@
+{
+    "id": "/",
+    "name": "AcompañaHer",
+    "short_name": "AcompañaHer",
+    "description": "Rutas, reportes de la comunidad y acompañamiento para decidir con más información cómo volver a casa de noche.",
+    "lang": "es-CO",
+    "dir": "ltr",
+    "start_url": "/?source=pwa",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#24112f",
+    "theme_color": "#24112f",
+    "categories": ["lifestyle", "navigation", "utilities"],
+    "icons": [
+        {
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Mapa de calor",
+            "short_name": "Mapa",
+            "url": "/mapa?source=shortcut",
+            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "Rutas peatonales",
+            "short_name": "Rutas",
+            "url": "/rutas?source=shortcut",
+            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+        }
+    ]
+}

@@ -29,17 +29,17 @@ export default function AuthSplitLayout({
         <div className="grid min-h-svh bg-background lg:grid-cols-[1.05fr_1fr]">
             <a
                 href="#contenido"
-                className="focus:bg-purple focus:text-warm-white sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:px-4 focus:py-2"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:bg-purple focus:px-4 focus:py-2 focus:text-warm-white"
             >
                 Saltar al contenido
             </a>
 
-            <aside className="bg-brand-gradient text-warm-white relative hidden flex-col justify-between p-12 lg:flex">
+            <aside className="bg-brand-gradient relative hidden flex-col justify-between p-12 text-warm-white lg:flex">
                 <Link
                     href={home()}
                     className="flex items-center gap-3 font-serif text-2xl font-semibold"
                 >
-                    <span className="bg-purple flex size-10 items-center justify-center rounded-xl">
+                    <span className="flex size-10 items-center justify-center rounded-xl bg-purple">
                         <AppLogoIcon className="size-6 fill-current" />
                     </span>
                     {name}
@@ -54,9 +54,9 @@ export default function AuthSplitLayout({
                         {PUNTOS.map(({ icono: Icono, texto }) => (
                             <li
                                 key={texto}
-                                className="text-warm-white/90 flex items-start gap-3"
+                                className="flex items-start gap-3 text-warm-white/90"
                             >
-                                <span className="bg-warm-white/10 mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full">
+                                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-warm-white/10">
                                     <Icono
                                         className="size-4 text-gold"
                                         aria-hidden="true"
@@ -68,7 +68,7 @@ export default function AuthSplitLayout({
                     </ul>
                 </div>
 
-                <p className="text-warm-white/70 max-w-md text-sm">
+                <p className="max-w-md text-sm text-warm-white/70">
                     Esta herramienta orienta; no promete protección absoluta ni
                     reemplaza a las autoridades. Si hay peligro inmediato, llama
                     al 123.
@@ -85,7 +85,7 @@ export default function AuthSplitLayout({
                         href={home()}
                         className="flex items-center justify-center gap-2 font-serif text-xl font-semibold lg:hidden"
                     >
-                        <span className="bg-purple text-warm-white flex size-9 items-center justify-center rounded-xl">
+                        <span className="flex size-9 items-center justify-center rounded-xl bg-purple text-warm-white">
                             <AppLogoIcon className="size-5 fill-current" />
                         </span>
                         {name}

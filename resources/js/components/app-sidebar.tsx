@@ -43,7 +43,7 @@ export function AppSidebar() {
     const planear: NavItem[] = [
         { title: 'Rutas seguras', href: urls.rutas, icon: Route },
         { title: 'Mapa de calor', href: urls.mapa, icon: Flame },
-        { title: 'Horarios seguros', href: urls.horarios, icon: Clock },
+        { title: 'Horarios', href: urls.horarios, icon: Clock },
     ];
 
     const acompanar: NavItem[] = [

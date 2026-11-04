@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\WebPush\PushSender;
+use App\Services\WebPush\VapidPushSender;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -18,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(PushSender::class, VapidPushSender::class);
     }
 
     /**
@@ -36,6 +38,12 @@ class AppServiceProvider extends ServiceProvider
                 return Limit::perMinute($maximum)->by($key);
             });
         }
+        RateLimiter::for('journey-start', fn (Request $request): Limit => Limit::perMinute(5)
+            ->by(hash_hmac('sha256', 'journey-start:'.$request->user()->id, config()->string('app.key'))));
+        RateLimiter::for('journey-location', fn (Request $request): Limit => Limit::perMinute(30)
+            ->by(hash_hmac('sha256', 'journey-location:'.$request->user()->id, config()->string('app.key'))));
+        RateLimiter::for('tracking', fn (Request $request): Limit => Limit::perMinute(40)
+            ->by(hash_hmac('sha256', 'tracking:'.hash('sha256', (string) $request->route('token')).'|'.$request->ip(), config()->string('app.key'))));
         RateLimiter::for('report-submission', fn (Request $request): Limit => Limit::perHour(5)
             ->by(hash_hmac('sha256', 'reporter:'.$request->user()->id, config()->string('app.key'))));
     }

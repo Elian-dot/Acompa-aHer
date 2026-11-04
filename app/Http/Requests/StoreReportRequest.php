@@ -6,7 +6,6 @@ use App\Data\ReportSubmission;
 use App\Models\Report;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 
 class StoreReportRequest extends FormRequest

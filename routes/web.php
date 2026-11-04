@@ -20,8 +20,8 @@ Route::prefix('{current_team}')
         Route::inertia('horarios', 'horarios')->name('horarios');
         Route::get('reportes', [SafetyPageController::class, 'reports'])->name('reportes');
         Route::get('sos', [SafetyPageController::class, 'sos'])->name('sos');
-        Route::inertia('acompanamiento', 'acompanamiento')->name('acompanamiento');
-        Route::inertia('inactividad', 'inactividad')->name('inactividad');
+        Route::get('acompanamiento', [SafetyPageController::class, 'journey'])->name('acompanamiento');
+        Route::get('inactividad', [SafetyPageController::class, 'alerts'])->name('inactividad');
         Route::inertia('comunidad', 'comunidad')->name('comunidad');
     });
 

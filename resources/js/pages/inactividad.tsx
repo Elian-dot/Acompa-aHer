@@ -1,43 +1,59 @@
-import { Head } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { Head, Link } from '@inertiajs/react';
+import { BellRing, CheckCircle2, CircleAlert, Clock } from 'lucide-react';
+import { useState } from 'react';
+import FormErrors from '@/components/ruta/form-errors';
 import PageHeader from '@/components/ruta/page-header';
+import PushToggle from '@/components/ruta/push-toggle';
 import SectionCard from '@/components/ruta/section-card';
-import SimulationBanner from '@/components/ruta/simulation-banner';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { CONTACTOS_EJEMPLO } from '@/lib/ruta';
+import { useJourney } from '@/hooks/use-journey';
+import { useNow } from '@/hooks/use-now';
+import {
+    deliveryLabel,
+    storeInactivityMinutes,
+    storedInactivityMinutes,
+} from '@/lib/journey';
+import { countdown, formatClock } from '@/lib/time';
+import { acompanamiento } from '@/routes';
+import { destroy, store } from '@/routes/api/v1/push_subscriptions';
+import { usePage } from '@inertiajs/react';
 
-type Fase = 'espera' | 'detenida' | 'aviso' | 'alerta' | 'bien';
+type Props = {
+    canStartJourney: boolean;
+    vapidPublicKey: string | null;
+    limits: {
+        minInactivityMinutes: number;
+        maxInactivityMinutes: number;
+        defaultInactivityMinutes: number;
+        maxPauseMinutes: number;
+    };
+};
 
-const AVISO_SEGUNDOS = 10;
+export default function Inactividad({
+    canStartJourney,
+    vapidPublicKey,
+    limits,
+}: Props) {
+    const { currentTeam } = usePage().props;
+    const journeyState = useJourney({ pollMs: 8000 });
+    const now = useNow();
+    const [minutes, setMinutes] = useState(() =>
+        storedInactivityMinutes(limits.defaultInactivityMinutes),
+    );
+    const journey = journeyState.journey;
+    const alert = journey?.alert ?? null;
+    const dueIn = journey
+        ? new Date(journey.inactivity_due_at).getTime() - now
+        : null;
+    const escalationIn = alert?.escalation_due_at
+        ? new Date(alert.escalation_due_at).getTime() - now
+        : null;
 
-export default function Inactividad() {
-    const [minutos, setMinutos] = useState(10);
-    const [fase, setFase] = useState<Fase>('espera');
-    const [restante, setRestante] = useState(AVISO_SEGUNDOS);
-
-    useEffect(() => {
-        if (fase === 'detenida') {
-            const id = setTimeout(() => {
-                setRestante(AVISO_SEGUNDOS);
-                setFase('aviso');
-            }, 2500);
-
-            return () => clearTimeout(id);
-        }
-
-        if (fase === 'aviso') {
-            if (restante <= 0) {
-                setFase('alerta');
-
-                return;
-            }
-
-            const id = setTimeout(() => setRestante((r) => r - 1), 1000);
-
-            return () => clearTimeout(id);
-        }
-    }, [fase, restante]);
+    function changeMinutes(value: number) {
+        setMinutes(value);
+        storeInactivityMinutes(value);
+    }
 
     return (
         <>
@@ -46,158 +62,278 @@ export default function Inactividad() {
                 <PageHeader
                     eyebrow="Acompañarme"
                     title="Alerta por inactividad"
-                    description="Si te detienes durante el tiempo que definas y no confirmas que estás bien, avisamos a tus contactos de confianza. Siempre te damos oportunidad de cancelar."
+                    description="Si te detienes durante el tiempo que definas y no confirmas que estás bien, primero te avisamos a ti. Si sigues sin responder, avisamos a tus contactos de confianza."
                     ayuda={
                         <p>
-                            Primero te mostramos un aviso con cuenta atrás. Si
-                            pulsas “Estoy bien” o “Cancelar”, nadie recibe nada.
-                            Solo si no respondes se notificará a tus contactos.
+                            Cuenta como actividad moverte más de 30 metros con
+                            buena señal de GPS, o pulsar “Estoy bien”. Un GPS
+                            impreciso no cuenta como movimiento ni como quietud.
+                            Si vas a quedarte en un lugar, pausa la alerta desde
+                            el acompañamiento.
                         </p>
                     }
                 />
 
-                <SimulationBanner>
-                    Aquí puedes ensayar el flujo con una detención simulada. No
-                    se envían avisos reales.
-                </SimulationBanner>
+                <FormErrors message={journeyState.message} />
 
-                <SectionCard headingId="config" title="Configura el tiempo">
-                    <div className="grid gap-2">
-                        <Label htmlFor="minutos">
+                <SectionCard
+                    headingId="tiempo"
+                    title="Tiempo de inactividad"
+                    description="Se aplica al próximo acompañamiento que inicies. En uno ya iniciado no puede cambiarse."
+                >
+                    <div className="grid max-w-md gap-2">
+                        <Label htmlFor="minutes">
                             Avisar si me detengo más de:{' '}
-                            <strong>{minutos} min</strong>
+                            <strong>{minutes} min</strong>
                         </Label>
                         <input
-                            id="minutos"
+                            id="minutes"
                             type="range"
-                            min={3}
-                            max={30}
+                            min={limits.minInactivityMinutes}
+                            max={limits.maxInactivityMinutes}
                             step={1}
-                            value={minutos}
-                            onChange={(e) => setMinutos(Number(e.target.value))}
-                            disabled={fase !== 'espera' && fase !== 'bien'}
-                            className="w-full accent-[#6d28a8]"
-                            aria-describedby="ayuda-min"
+                            value={minutes}
+                            onChange={(event) =>
+                                changeMinutes(Number(event.target.value))
+                            }
+                            className="w-full accent-purple"
+                            aria-describedby="minutes-help"
                         />
                         <p
-                            id="ayuda-min"
+                            id="minutes-help"
                             className="text-sm text-muted-foreground"
                         >
-                            Antes de avisar a tus contactos te mostraremos un
-                            aviso de {AVISO_SEGUNDOS} segundos. Entre 3 y 30
-                            minutos.
+                            Entre {limits.minInactivityMinutes} y{' '}
+                            {limits.maxInactivityMinutes} minutos. Después del
+                            aviso para ti, esperamos unos 2 minutos antes de
+                            avisar a tus contactos. Esta preferencia se guarda
+                            solo en este dispositivo.
                         </p>
                     </div>
                 </SectionCard>
 
-                <SectionCard headingId="simulacion" title="Ensáyalo">
-                    <div aria-live="polite" className="space-y-4">
-                        {(fase === 'espera' || fase === 'bien') && (
-                            <>
-                                {fase === 'bien' && (
-                                    <p className="rounded-2xl bg-secondary p-4 text-sm font-medium">
-                                        Alerta cancelada. Tus contactos no
-                                        recibieron nada.
-                                    </p>
-                                )}
-                                <Button
-                                    className="rounded-full"
-                                    onClick={() => setFase('detenida')}
-                                >
-                                    Simular que me detuve {minutos} minutos
-                                </Button>
-                            </>
-                        )}
-                        {fase === 'detenida' && (
-                            <p className="text-sm">
-                                Detectamos que llevas {minutos} minutos sin
-                                moverte…
-                            </p>
-                        )}
-                        {fase === 'aviso' && (
-                            <div
-                                role="alertdialog"
-                                aria-labelledby="titulo-aviso"
-                                className="rounded-3xl border-2 border-gold bg-gold/15 p-6 text-center"
-                            >
-                                <h3
-                                    id="titulo-aviso"
-                                    className="text-xl font-semibold"
-                                >
-                                    ¿Estás bien?
-                                </h3>
-                                <p className="mt-2">
-                                    Avisaremos a tus contactos en{' '}
-                                    <strong className="text-2xl tabular-nums">
-                                        {restante}
-                                    </strong>{' '}
-                                    s si no respondes.
-                                </p>
-                                <div className="mt-4 flex flex-wrap justify-center gap-3">
-                                    <Button
-                                        size="lg"
-                                        className="rounded-full"
-                                        onClick={() => setFase('bien')}
-                                    >
-                                        Estoy bien
-                                    </Button>
-                                    <Button
-                                        size="lg"
-                                        variant="outline"
-                                        className="rounded-full"
-                                        onClick={() => setFase('bien')}
-                                    >
-                                        Cancelar alerta
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                        {fase === 'alerta' && (
-                            <div className="rounded-3xl border-2 border-danger p-6">
-                                <h3 className="text-xl font-semibold">
-                                    Alerta simulada
-                                </h3>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    En la versión real se notificaría a estos
-                                    contactos:
-                                </p>
-                                <ul className="mt-3 space-y-2 text-sm">
-                                    {CONTACTOS_EJEMPLO.map((c) => (
-                                        <li
-                                            key={c.id}
-                                            className="flex justify-between rounded-xl border p-3"
-                                        >
-                                            <span>{c.nombre}</span>
-                                            <span className="font-semibold">
-                                                Pendiente (simulación)
-                                            </span>
-                                        </li>
-                                    ))}
-                                </ul>
-                                <Button
-                                    className="mt-4 rounded-full"
-                                    onClick={() => setFase('espera')}
-                                >
-                                    Reiniciar ensayo
-                                </Button>
-                            </div>
-                        )}
-                    </div>
+                <SectionCard
+                    headingId="avisos"
+                    title="Avisos en este dispositivo"
+                    description="Para que la alerta te llegue aunque tengas la aplicación cerrada."
+                >
+                    <PushToggle
+                        publicKey={vapidPublicKey}
+                        subscribeUrl={store.url()}
+                        unsubscribeUrl={destroy.url()}
+                        description="Te mostraremos un aviso con vibración cuando lleves tiempo sin moverte, antes de avisar a nadie más."
+                    />
                 </SectionCard>
 
-                <SectionCard headingId="casos" title="Qué tenemos en cuenta">
+                <SectionCard headingId="estado" title="Estado actual">
+                    {journey === undefined && (
+                        <p role="status">Consultando tu acompañamiento…</p>
+                    )}
+                    {journey === null && (
+                        <div className="space-y-3 text-sm">
+                            <p>
+                                No tienes un acompañamiento activo, así que no
+                                hay ninguna alerta corriendo.
+                            </p>
+                            {canStartJourney && (
+                                <Button asChild>
+                                    <Link
+                                        href={
+                                            currentTeam
+                                                ? acompanamiento(
+                                                      currentTeam.slug,
+                                                  )
+                                                : '/'
+                                        }
+                                    >
+                                        Iniciar un acompañamiento
+                                    </Link>
+                                </Button>
+                            )}
+                        </div>
+                    )}
+                    {journey && (
+                        <div className="space-y-4" aria-live="polite">
+                            {!alert && (
+                                <div className="flex flex-wrap items-center gap-3 rounded-2xl border p-4">
+                                    <Clock
+                                        className="size-5 text-purple dark:text-lila"
+                                        aria-hidden="true"
+                                    />
+                                    {journey.paused_until ? (
+                                        <p>
+                                            Alerta en pausa hasta las{' '}
+                                            {formatClock(journey.paused_until)}.
+                                        </p>
+                                    ) : (
+                                        <p>
+                                            Si no te mueves ni confirmas, el
+                                            aviso para ti saltará en{' '}
+                                            <strong className="tabular-nums">
+                                                {dueIn !== null && dueIn > 0
+                                                    ? countdown(dueIn)
+                                                    : 'unos segundos'}
+                                            </strong>
+                                            .
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
+                            {alert?.status === 'preliminary' && (
+                                <div
+                                    role="alert"
+                                    className="rounded-3xl border-2 border-gold bg-gold/15 p-5"
+                                >
+                                    <h3 className="inline-flex items-center gap-2 text-xl font-semibold">
+                                        <BellRing
+                                            className="size-5"
+                                            aria-hidden="true"
+                                        />{' '}
+                                        ¿Estás bien?
+                                    </h3>
+                                    <p className="mt-2">
+                                        Avisaremos a tus contactos en{' '}
+                                        <strong className="tabular-nums">
+                                            {escalationIn !== null
+                                                ? countdown(escalationIn)
+                                                : '—'}
+                                        </strong>{' '}
+                                        si no respondes.
+                                    </p>
+                                    <div className="mt-4 flex flex-wrap gap-3">
+                                        <Button
+                                            size="lg"
+                                            onClick={() =>
+                                                void journeyState.confirm()
+                                            }
+                                            disabled={journeyState.busy}
+                                        >
+                                            Estoy bien
+                                        </Button>
+                                        <Button
+                                            size="lg"
+                                            variant="outline"
+                                            onClick={() =>
+                                                void journeyState.confirm(
+                                                    limits.maxPauseMinutes,
+                                                )
+                                            }
+                                            disabled={journeyState.busy}
+                                        >
+                                            Cancelar la alerta (
+                                            {limits.maxPauseMinutes} min)
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {alert && alert.status !== 'preliminary' && (
+                                <div
+                                    role="alert"
+                                    className="rounded-3xl border-2 border-danger p-5"
+                                >
+                                    <h3 className="inline-flex items-center gap-2 text-xl font-semibold">
+                                        <CircleAlert
+                                            className="size-5 text-danger"
+                                            aria-hidden="true"
+                                        />
+                                        {alert.status === 'acknowledged'
+                                            ? 'Un contacto vio tu alerta'
+                                            : 'Avisamos a tus contactos'}
+                                    </h3>
+                                    <p className="mt-2 text-sm">
+                                        Si ya estás bien, confírmalo para cerrar
+                                        la alerta.
+                                    </p>
+                                    <Button
+                                        className="mt-3"
+                                        onClick={() =>
+                                            void journeyState.confirm()
+                                        }
+                                        disabled={journeyState.busy}
+                                    >
+                                        <CheckCircle2 aria-hidden="true" />{' '}
+                                        Estoy bien
+                                    </Button>
+                                </div>
+                            )}
+
+                            {alert && alert.deliveries.length > 0 && (
+                                <div>
+                                    <h3 className="mb-2 text-base font-semibold">
+                                        Registro de entrega
+                                    </h3>
+                                    <ul className="space-y-2 text-sm">
+                                        {alert.deliveries.map(
+                                            (delivery, position) => (
+                                                <li
+                                                    key={position}
+                                                    className="rounded-2xl border p-3"
+                                                >
+                                                    <div className="flex flex-wrap justify-between gap-2">
+                                                        <span className="font-semibold">
+                                                            {delivery.recipient}{' '}
+                                                            ·{' '}
+                                                            {delivery.stage ===
+                                                            'preliminary'
+                                                                ? 'aviso previo'
+                                                                : 'alerta'}
+                                                        </span>
+                                                        <span
+                                                            className={
+                                                                delivery.status ===
+                                                                'failed'
+                                                                    ? 'font-semibold text-danger'
+                                                                    : delivery.status ===
+                                                                        'sent'
+                                                                      ? 'font-semibold text-success'
+                                                                      : ''
+                                                            }
+                                                        >
+                                                            {delivery.status ===
+                                                            'sent'
+                                                                ? 'Entregado'
+                                                                : delivery.status ===
+                                                                    'failed'
+                                                                  ? 'No entregado'
+                                                                  : 'En curso'}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-muted-foreground">
+                                                        {deliveryLabel(
+                                                            delivery,
+                                                        )}
+                                                    </p>
+                                                </li>
+                                            ),
+                                        )}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </SectionCard>
+
+                <SectionCard headingId="limites" title="Qué tenemos en cuenta">
                     <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
                         <li>
-                            GPS impreciso: no avisamos por pequeños movimientos
-                            de la señal.
+                            Una señal de GPS imprecisa (más de 100 m) no cuenta
+                            como movimiento: no debería generar falsas alertas
+                            por pequeños saltos.
                         </li>
                         <li>
-                            Detenciones voluntarias: puedes pausar la alerta si
-                            vas a quedarte en un lugar.
+                            Si pierdes la conexión, tu aplicación guarda la
+                            última ubicación y la envía al reconectar. Una
+                            alerta no se cancela sola por una desconexión.
                         </li>
                         <li>
-                            Pérdida de conexión: te mostraremos si el aviso no
-                            pudo entregarse.
+                            El plazo lo controla el servidor, no el reloj de tu
+                            teléfono.
+                        </li>
+                        <li>
+                            Un acompañamiento sin terminar se cierra solo a las
+                            12 horas.
                         </li>
                     </ul>
                 </SectionCard>

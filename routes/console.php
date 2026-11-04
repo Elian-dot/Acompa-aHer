@@ -15,3 +15,8 @@ Schedule::command('model:prune', ['--model' => [Journey::class]])
     ->everyMinute()
     ->withoutOverlapping()
     ->description('Delete journeys and dependent data 24 hours after closure');
+
+Schedule::command('journeys:process-alerts')
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->description('Detect inactivity, escalate unanswered alerts and close abandoned journeys');

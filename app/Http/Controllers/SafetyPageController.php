@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Data\GeographicCoverage;
 use App\Models\EmergencyContact;
+use App\Models\Journey;
 use App\Models\Report;
 use App\Models\ReportCategory;
 use Illuminate\Http\Request;
@@ -45,6 +46,37 @@ class SafetyPageController extends Controller
         ]);
     }
 
+    public function journey(Request $request, GeographicCoverage $coverage): Response
+    {
+        return Inertia::render('acompanamiento', [
+            ...$this->mapConfiguration($coverage),
+            'canManageContacts' => $request->user()->can('viewAny', EmergencyContact::class),
+            'canStartJourney' => $request->user()->can('start', Journey::class),
+            'vapidPublicKey' => config('safety.webpush.public_key'),
+            'limits' => [
+                'minInactivityMinutes' => config()->integer('safety.min_inactivity_seconds') / 60,
+                'maxInactivityMinutes' => config()->integer('safety.max_inactivity_seconds') / 60,
+                'defaultInactivityMinutes' => config()->integer('safety.inactivity_seconds') / 60,
+                'maxPauseMinutes' => config()->integer('safety.pause_max_minutes'),
+                'maxShareHours' => min(config()->integer('safety.share_max_hours'), config()->integer('safety.journey_max_hours')),
+            ],
+        ]);
+    }
+
+    public function alerts(Request $request): Response
+    {
+        return Inertia::render('inactividad', [
+            'canStartJourney' => $request->user()->can('start', Journey::class),
+            'vapidPublicKey' => config('safety.webpush.public_key'),
+            'limits' => [
+                'minInactivityMinutes' => config()->integer('safety.min_inactivity_seconds') / 60,
+                'maxInactivityMinutes' => config()->integer('safety.max_inactivity_seconds') / 60,
+                'defaultInactivityMinutes' => config()->integer('safety.inactivity_seconds') / 60,
+                'maxPauseMinutes' => config()->integer('safety.pause_max_minutes'),
+            ],
+        ]);
+    }
+
     public function contacts(): Response
     {
         Gate::authorize('viewAny', EmergencyContact::class);
@@ -62,17 +94,7 @@ class SafetyPageController extends Controller
     /** @return array<string, mixed> */
     private function mapConfiguration(GeographicCoverage $coverage): array
     {
-        return [
-            'mapConfiguration' => [
-                'center' => [4.303, -74.8039], 'zoom' => 14,
-                'tileUrl' => config('safety.tile_url'),
-                'coverageAvailable' => $coverage->isAvailable(),
-                'coverage' => $coverage->featureCollection(),
-                'coverageSource' => config('safety.coverage_source'),
-                'coverageSourceUrl' => config('safety.coverage_source_url'),
-                'coverageRetrievedAt' => config('safety.coverage_retrieved_at'),
-            ],
-        ];
+        return ['mapConfiguration' => $coverage->mapConfiguration()];
     }
 
     /** @return array<int, array{id: int, code: string, name: string}> */

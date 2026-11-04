@@ -29,6 +29,24 @@ class GeographicCoverage
         return Zone::query()->updateOrCreate(['code' => config('safety.coverage_code')], ['name' => 'Girardot', 'boundary' => $boundary->geometry]);
     }
 
+    /**
+     * Configuración que necesita cualquier página con mapa.
+     *
+     * @return array<string, mixed>
+     */
+    public function mapConfiguration(): array
+    {
+        return [
+            'center' => [4.303, -74.8039], 'zoom' => 14,
+            'tileUrl' => config('safety.tile_url'),
+            'coverageAvailable' => $this->isAvailable(),
+            'coverage' => $this->featureCollection(),
+            'coverageSource' => config('safety.coverage_source'),
+            'coverageSourceUrl' => config('safety.coverage_source_url'),
+            'coverageRetrievedAt' => config('safety.coverage_retrieved_at'),
+        ];
+    }
+
     public function isAvailable(): bool
     {
         return Zone::query()->where('code', config('safety.coverage_code'))->exists();

@@ -16,7 +16,7 @@ export default function PageHeader({
 }: Props) {
     return (
         <header className="space-y-3">
-            <p className="text-purple text-xs font-bold tracking-[0.18em] uppercase dark:text-lila">
+            <p className="text-xs font-bold tracking-[0.18em] text-purple uppercase dark:text-lila">
                 {eyebrow}
             </p>
             <h1 className="text-3xl leading-tight font-semibold text-balance md:text-4xl">
@@ -29,7 +29,7 @@ export default function PageHeader({
                 <details className="group max-w-2xl rounded-2xl border bg-secondary/60 px-4 py-3 text-sm">
                     <summary className="flex cursor-pointer list-none items-center gap-2 font-medium">
                         <CircleHelp
-                            className="text-purple size-4 dark:text-lila"
+                            className="size-4 text-purple dark:text-lila"
                             aria-hidden="true"
                         />
                         ¿Cómo funciona esta sección?
