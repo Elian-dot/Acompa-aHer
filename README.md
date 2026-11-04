@@ -1,4 +1,4 @@
-# Ruta Segura (Acompaña Her)
+# AcompañaHer
 
 Aplicación web para ayudar a las mujeres a tomar decisiones informadas en sus desplazamientos nocturnos por el espacio público. Combina información de rutas, reportes comunitarios y herramientas de acompañamiento, con foco inicial en el municipio de **Girardot (Cundinamarca, Colombia)**.
 

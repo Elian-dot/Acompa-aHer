@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import AppLogoIcon from '@/components/app-logo-icon';
+import ThemeToggle from '@/components/theme-toggle';
 import { dashboard, login, register } from '@/routes';
 import { mapa, rutas } from '@/routes/public';
 
@@ -123,7 +124,7 @@ export default function Welcome() {
 
     return (
         <>
-            <Head title="Ruta segura para mujeres de noche" />
+            <Head title="AcompañaHer: rutas más informadas para mujeres de noche" />
             <a
                 href="#contenido"
                 className="focus:bg-purple focus:text-warm-white sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:px-4 focus:py-2"
@@ -140,7 +141,7 @@ export default function Welcome() {
                         <span className="bg-purple flex size-9 items-center justify-center rounded-xl">
                             <AppLogoIcon className="size-5 fill-current" />
                         </span>
-                        Ruta Segura
+                        AcompañaHer
                     </a>
                     <nav
                         aria-label="Principal"
@@ -169,6 +170,7 @@ export default function Welcome() {
                         >
                             Rutas peatonales
                         </Link>
+                        <ThemeToggle className="text-warm-white" />
                         {auth.user ? (
                             <Link
                                 href={dashboardUrl}
@@ -374,7 +376,7 @@ export default function Welcome() {
                         {PASOS.map((p, i) => (
                             <li
                                 key={p.titulo}
-                                className="text-warm-white rounded-3xl bg-ink p-6"
+                                className="text-warm-white rounded-3xl bg-ink p-6 dark:bg-plum dark:ring-1 dark:ring-white/15"
                             >
                                 <span className="font-serif text-4xl text-gold">
                                     {i + 1}
@@ -466,7 +468,7 @@ export default function Welcome() {
             <footer className="text-warm-white bg-deep-plum">
                 <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-8 text-sm">
                     <p className="font-serif text-lg font-semibold">
-                        Ruta Segura
+                        AcompañaHer
                     </p>
                     <p className="text-warm-white/70">
                         Prototipo MVP · Los datos mostrados son de ejemplo.

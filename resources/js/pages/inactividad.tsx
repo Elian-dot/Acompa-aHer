@@ -153,7 +153,7 @@ export default function Inactividad() {
                             </div>
                         )}
                         {fase === 'alerta' && (
-                            <div className="rounded-3xl border-2 border-[#b42336] p-6">
+                            <div className="rounded-3xl border-2 border-danger p-6">
                                 <h3 className="text-xl font-semibold">
                                     Alerta simulada
                                 </h3>

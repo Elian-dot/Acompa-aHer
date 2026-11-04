@@ -18,6 +18,10 @@
     --color-plum: var(--plum);
     --color-ink: var(--ink);
     --color-deep-plum: var(--deep-plum);
+    --color-success: var(--success);
+    --color-danger: var(--danger);
+    --color-danger-foreground: var(--danger-foreground);
+    --color-warning-text: var(--warning-text);
     --color-risk-low: var(--risk-low);
     --color-risk-mid: var(--risk-mid);
     --color-risk-high: var(--risk-high);
@@ -72,7 +76,7 @@
 }
 
 :root {
-    /* Identidad visual: especificación UX/UI Ruta Segura */
+    /* Identidad visual: especificación UX/UI de AcompañaHer */
     --ink: #24112f;
     --plum: #391c42;
     --purple: #6d28a8;
@@ -118,6 +122,11 @@
     --sidebar-border: #ffffff1f;
     --sidebar-ring: #e395f2;
 
+    --success: #17653c;
+    --danger: #b42336;
+    --danger-foreground: #ffffff;
+    --warning-text: #8a4b0d;
+
     /* Mapa de calor: escala independiente */
     --risk-low: #2e8b57;
     --risk-mid: #f2c94c;
@@ -153,6 +162,11 @@
 
     --sidebar: #1a0822;
     --sidebar-accent: #391c42;
+
+    --success: #6fd49a;
+    --danger: #ff8a95;
+    --danger-foreground: #24112f;
+    --warning-text: #f6ad69;
 }
 
 @layer base {
@@ -214,7 +228,10 @@
     }
 
     .pattern-dots {
-        background-image: radial-gradient(currentColor 1.2px, transparent 1.2px);
+        background-image: radial-gradient(
+            currentColor 1.2px,
+            transparent 1.2px
+        );
         background-size: 6px 6px;
     }
 
@@ -232,4 +249,14 @@
             linear-gradient(-45deg, currentColor 1.5px, transparent 1.5px);
         background-size: 8px 8px;
     }
+}
+
+/* Mapa en tema oscuro: se invierten solo las teselas, no los marcadores */
+.dark .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9)
+        saturate(0.7);
+}
+
+.dark .leaflet-container {
+    background: #1a0822;
 }

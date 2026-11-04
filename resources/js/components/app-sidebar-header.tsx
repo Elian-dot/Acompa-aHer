@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ShieldAlert } from 'lucide-react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import ThemeToggle from '@/components/theme-toggle';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAppUrls } from '@/hooks/use-app-urls';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
@@ -18,14 +19,17 @@ export function AppSidebarHeader({
                 <SidebarTrigger className="-ml-1" />
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
-            <Link
-                href={urls.sos}
-                className="inline-flex items-center gap-2 rounded-full bg-[#b42336] px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#9a1d2e]"
-                aria-label="Abrir el botón SOS"
-            >
-                <ShieldAlert className="size-4" aria-hidden="true" />
-                SOS
-            </Link>
+            <div className="flex items-center gap-2">
+                <ThemeToggle className="text-foreground" />
+                <Link
+                    href={urls.sos}
+                    className="inline-flex items-center gap-2 rounded-full bg-danger px-4 py-2 text-sm font-bold text-danger-foreground shadow-sm transition hover:bg-danger/85"
+                    aria-label="Abrir el botón SOS"
+                >
+                    <ShieldAlert className="size-4" aria-hidden="true" />
+                    SOS
+                </Link>
+            </div>
         </header>
     );
 }

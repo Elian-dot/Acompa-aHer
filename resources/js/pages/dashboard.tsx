@@ -202,7 +202,7 @@ export default function Dashboard({ pendingInvitations = [] }: Props) {
                                         >
                                             {hecho ? (
                                                 <CheckCircle2
-                                                    className="mt-0.5 size-5 shrink-0 text-[#2e8b57]"
+                                                    className="mt-0.5 size-5 shrink-0 text-success"
                                                     aria-hidden="true"
                                                 />
                                             ) : (

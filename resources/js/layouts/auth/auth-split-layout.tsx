@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { Lock, MapPinned, Users } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
+import ThemeToggle from '@/components/theme-toggle';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 import { usePage } from '@inertiajs/react';
@@ -76,8 +77,9 @@ export default function AuthSplitLayout({
 
             <main
                 id="contenido"
-                className="flex items-center justify-center p-6 md:p-10"
+                className="relative flex items-center justify-center p-6 md:p-10"
             >
+                <ThemeToggle className="absolute top-4 right-4 text-foreground" />
                 <div className="w-full max-w-md space-y-8">
                     <Link
                         href={home()}

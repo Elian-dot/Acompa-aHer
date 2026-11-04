@@ -91,7 +91,7 @@ export default function Reportes({
                         className="rounded-3xl border bg-card p-6"
                     >
                         <CheckCircle2
-                            className="mb-2 size-8 text-green-700"
+                            className="mb-2 size-8 text-success"
                             aria-hidden="true"
                         />
                         <h2 className="text-xl font-semibold">

@@ -128,7 +128,7 @@ export default function Acompanamiento() {
                                 </Button>
                             )}
                             <Button
-                                className="rounded-full bg-[#b42336] text-white hover:bg-[#9a1d2e]"
+                                className="rounded-full bg-danger text-danger-foreground hover:bg-danger/85"
                                 onClick={() => setEstado('detenido')}
                             >
                                 <Square aria-hidden="true" /> Terminar
@@ -216,10 +216,7 @@ export default function Acompanamiento() {
                                 . Puedo detenerlo cuando quiera.
                             </Label>
                         </div>
-                        <p
-                            role="alert"
-                            className="text-sm text-red-700 dark:text-red-300"
-                        >
+                        <p role="alert" className="text-sm text-danger">
                             {error}
                         </p>
                         <div>
