@@ -21,3 +21,19 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 
 COMMIT;
 SQL
+
+psql --username "$POSTGRES_USER" --dbname postgres \
+    --set=ON_ERROR_STOP=1 \
+    --set=test_database="${POSTGRES_DB}_testing" \
+    --set=app_user="$APP_DB_USER" <<'SQL'
+SELECT format('CREATE DATABASE %I', :'test_database')
+WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = :'test_database') \gexec
+
+\connect :test_database
+
+REVOKE ALL ON DATABASE :"test_database" FROM PUBLIC;
+GRANT CONNECT, TEMPORARY ON DATABASE :"test_database" TO :"app_user";
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+GRANT USAGE, CREATE ON SCHEMA public TO :"app_user";
+CREATE EXTENSION IF NOT EXISTS postgis;
+SQL
