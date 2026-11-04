@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\EmergencyContactController;
 use App\Http\Controllers\Api\V1\MapController;
+use App\Http\Controllers\Api\V1\ReferenceMapController;
 use App\Http\Controllers\Api\V1\ReportAttachmentController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\ReportModerationController;
@@ -21,6 +22,7 @@ Route::middleware(['auth', PreventSensitiveResponseCaching::class])->group(funct
 
 Route::prefix('api/v1')->name('api.v1.')->middleware([PreventSensitiveResponseCaching::class])->group(function (): void {
     Route::get('map', [MapController::class, 'index'])->middleware('throttle:map-read')->name('map.index');
+    Route::get('reference-map', ReferenceMapController::class)->middleware('throttle:map-read')->name('reference_map');
     Route::post('walking-routes', [WalkingRouteController::class, 'store'])->middleware('throttle:walking-routes')->name('walking_routes.store');
 
     Route::middleware('auth')->group(function (): void {

@@ -1,5 +1,10 @@
 export function requestErrorMessage(error: unknown): string {
-    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ERR_CANCELED') {
+    if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        error.code === 'ERR_CANCELLED'
+    ) {
         return '';
     }
     const response =

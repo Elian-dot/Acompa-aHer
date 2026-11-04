@@ -140,3 +140,30 @@ test('routing enforces the provider request limit across users', function () {
     $this->actingAs(User::factory()->create())->postJson(route('api.v1.walking_routes.store'), walkingRoutePayload())->assertTooManyRequests();
     Http::assertSentCount(1);
 });
+
+test('routing excludes geometry whose endpoints do not match the requested locations', function () {
+    Http::preventStrayRequests();
+    $response = walkingProviderResponse();
+    $response['routes'][0]['geometry']['coordinates'] = [[-74.81, 4.31], [-74.81, 4.32]];
+    Http::fake(['https://routing.openstreetmap.de/routed-foot/route/v1/foot/*' => Http::response($response)]);
+    Zone::factory()->create(['code' => '25307']);
+    $this->postJson(route('api.v1.walking_routes.store'), walkingRoutePayload())->assertOk()->assertJsonCount(0, 'data');
+    Http::assertSentCount(1);
+});
+
+test('boundary imports fail clearly without overwriting coverage for malformed files', function (string $contents) {
+    $this->seed(GirardotCoverageSeeder::class);
+    $path = tempnam(sys_get_temp_dir(), 'girardot-invalid-');
+    file_put_contents($path, $contents);
+    try {
+        $this->artisan('safety:import-girardot', ['--file' => $path])->assertFailed();
+    } finally {
+        unlink($path);
+    }
+    $this->assertDatabaseCount('zones', 1);
+})->with([
+    'invalid JSON' => ['not json'],
+    'not an object' => ['null'],
+    'invalid feature collection' => ['{"type":"FeatureCollection","features":"invalid"}'],
+    'different municipality' => ['{"type":"FeatureCollection","features":[{"properties":{"code":"00000"}}]}'],
+]);

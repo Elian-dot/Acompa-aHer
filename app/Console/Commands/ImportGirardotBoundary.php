@@ -6,6 +6,7 @@ use App\Data\GeographicCoverage;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\File;
 use Illuminate\Validation\ValidationException;
 use JsonException;
@@ -23,8 +24,14 @@ class ImportGirardotBoundary extends Command
             return self::FAILURE;
         }
         try {
-            $coverage->import(json_decode(File::get($path), true, flags: JSON_THROW_ON_ERROR));
-        } catch (JsonException|ValidationException $exception) {
+            $data = json_decode(File::get($path), true, flags: JSON_THROW_ON_ERROR);
+            if (! is_array($data)) {
+                $this->error('El archivo debe contener un objeto GeoJSON válido.');
+
+                return self::FAILURE;
+            }
+            $coverage->import($data);
+        } catch (JsonException|ValidationException|QueryException $exception) {
             $this->error('No se pudo importar el límite: revisa el formato y la cobertura del archivo.');
 
             return self::FAILURE;

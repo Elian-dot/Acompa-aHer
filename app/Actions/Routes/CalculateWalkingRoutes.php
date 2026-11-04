@@ -63,7 +63,10 @@ class CalculateWalkingRoutes
         foreach (array_slice($data['routes'], 0, 3) as $route) {
             $geometry = ['type' => 'LineString', 'coordinates' => $route['geometry']['coordinates']];
             $covered = Zone::query()->where('code', config('safety.coverage_code'))
-                ->whereRaw('ST_Covers(boundary, ST_SetSRID(ST_GeomFromGeoJSON(?), 4326))', [json_encode($geometry, JSON_THROW_ON_ERROR)])->exists();
+                ->whereRaw('ST_Covers(boundary, ST_SetSRID(ST_GeomFromGeoJSON(?), 4326))', [json_encode($geometry, JSON_THROW_ON_ERROR)])
+                ->whereRaw('ST_DWithin(ST_StartPoint(ST_SetSRID(ST_GeomFromGeoJSON(?), 4326))::geography, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, 50)', [json_encode($geometry, JSON_THROW_ON_ERROR), $origin['longitude'], $origin['latitude']])
+                ->whereRaw('ST_DWithin(ST_EndPoint(ST_SetSRID(ST_GeomFromGeoJSON(?), 4326))::geography, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, 50)', [json_encode($geometry, JSON_THROW_ON_ERROR), $destination['longitude'], $destination['latitude']])
+                ->exists();
             if ($covered) {
                 $routes[] = [
                     'id' => count($routes) + 1, 'distance_meters' => (float) $route['distance'],

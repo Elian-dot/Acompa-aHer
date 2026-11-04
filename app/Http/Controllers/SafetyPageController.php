@@ -67,6 +67,7 @@ class SafetyPageController extends Controller
                 'center' => [4.303, -74.8039], 'zoom' => 14,
                 'tileUrl' => config('safety.tile_url'),
                 'coverageAvailable' => $coverage->isAvailable(),
+                'coverage' => $coverage->featureCollection(),
                 'coverageSource' => config('safety.coverage_source'),
                 'coverageSourceUrl' => config('safety.coverage_source_url'),
                 'coverageRetrievedAt' => config('safety.coverage_retrieved_at'),

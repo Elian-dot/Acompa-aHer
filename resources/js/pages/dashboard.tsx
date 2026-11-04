@@ -38,7 +38,8 @@ const PASOS_INICIO = [
     {
         id: 'sos',
         titulo: 'Revisa cómo pedir ayuda',
-        detalle: 'Las llamadas y los SMS se abren en tu dispositivo y requieren confirmación.',
+        detalle:
+            'Las llamadas y los SMS se abren en tu dispositivo y requieren confirmación.',
     },
 ];
 
@@ -236,7 +237,12 @@ export default function Dashboard({ pendingInvitations = [] }: Props) {
                 </div>
 
                 <aside className="rounded-2xl border bg-secondary/50 p-4 text-sm text-muted-foreground">
-                    Reportes, moderación, contactos, mapa y consulta de rutas están conectados al servidor. El SOS abre llamadas o prepara SMS reales, cuyo envío debes confirmar en tu dispositivo. Los módulos de acompañamiento, inactividad, horarios y estadísticas conservan sus avisos de demostración mientras se implementan.
+                    Reportes, moderación, contactos, mapa y consulta de rutas
+                    están conectados al servidor. El SOS abre llamadas o prepara
+                    SMS reales, cuyo envío debes confirmar en tu dispositivo.
+                    Los módulos de acompañamiento, inactividad, horarios y
+                    estadísticas conservan sus avisos de demostración mientras
+                    se implementan.
                 </aside>
             </div>
         </>

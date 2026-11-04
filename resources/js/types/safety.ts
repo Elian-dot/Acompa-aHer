@@ -5,6 +5,7 @@ export type MapConfiguration = {
     zoom: number;
     tileUrl: string;
     coverageAvailable: boolean;
+    coverage: FeatureCollection;
     coverageSource: string;
     coverageSourceUrl: string;
     coverageRetrievedAt: string;
@@ -26,6 +27,16 @@ export type HeatmapMeta = {
 export type MapPayload = {
     coverage: FeatureCollection;
     heatmap: FeatureCollection & { meta: HeatmapMeta };
+};
+export type ReferenceMap = FeatureCollection & {
+    meta: {
+        source: string;
+        license: string;
+        retrieved_at: string | null;
+        roads: number;
+        places: number;
+        notice: string;
+    };
 };
 export type Contact = {
     id: number;

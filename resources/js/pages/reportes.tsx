@@ -218,12 +218,12 @@ export default function Reportes({
                                             : []
                                     }
                                     onSelect={(value) =>
-                                        form.setData({
-                                            ...form.data,
+                                        form.setData((current) => ({
+                                            ...current,
                                             latitude: value.latitude.toFixed(6),
                                             longitude:
                                                 value.longitude.toFixed(6),
-                                        })
+                                        }))
                                     }
                                 />
                                 <Button
@@ -234,13 +234,13 @@ export default function Reportes({
                                     }
                                     onClick={() =>
                                         location.locate((value) =>
-                                            form.setData({
-                                                ...form.data,
+                                            form.setData((current) => ({
+                                                ...current,
                                                 latitude:
                                                     value.latitude.toFixed(6),
                                                 longitude:
                                                     value.longitude.toFixed(6),
-                                            }),
+                                            })),
                                         )
                                     }
                                 >

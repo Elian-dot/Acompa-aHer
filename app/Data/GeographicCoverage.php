@@ -12,7 +12,7 @@ class GeographicCoverage
     public function import(array $data): Zone
     {
         $features = $data['features'] ?? [];
-        if (($data['type'] ?? null) !== 'FeatureCollection' || count($features) !== 1
+        if (($data['type'] ?? null) !== 'FeatureCollection' || ! is_array($features) || count($features) !== 1
             || ($features[0]['properties']['code'] ?? null) !== config('safety.coverage_code')
             || ! in_array($features[0]['geometry']['type'] ?? null, ['Polygon', 'MultiPolygon'], true)) {
             throw ValidationException::withMessages(['boundary' => 'El archivo debe contener únicamente el límite de Girardot, código 25307.']);

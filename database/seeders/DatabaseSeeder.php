@@ -14,5 +14,6 @@ class DatabaseSeeder extends Seeder
         $this->call(RolesAndPermissionsSeeder::class);
         $this->call(ReportCategorySeeder::class);
         $this->call(GirardotCoverageSeeder::class);
+        $this->call(GeographicFeatureSeeder::class);
     }
 }
