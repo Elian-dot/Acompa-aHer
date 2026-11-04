@@ -1,5 +1,17 @@
-import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import {
+    BarChart3,
+    BellRing,
+    Clock,
+    FilePenLine,
+    Flame,
+    HeartHandshake,
+    Home,
+    Lock,
+    Route,
+    ShieldAlert,
+    User,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -14,34 +26,54 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { useAppUrls } from '@/hooks/use-app-urls';
+import { edit as editProfile } from '@/routes/profile';
+import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
 
 export function AppSidebar() {
-    const page = usePage();
-    const dashboardUrl = page.props.currentTeam
-        ? dashboard(page.props.currentTeam.slug)
-        : '/';
+    const urls = useAppUrls();
 
-    const mainNavItems: NavItem[] = [
+    const inicio: NavItem[] = [
+        { title: 'Inicio', href: urls.dashboard, icon: Home },
+    ];
+
+    const planear: NavItem[] = [
+        { title: 'Rutas seguras', href: urls.rutas, icon: Route },
+        { title: 'Mapa de calor', href: urls.mapa, icon: Flame },
+        { title: 'Horarios seguros', href: urls.horarios, icon: Clock },
+    ];
+
+    const acompanar: NavItem[] = [
+        { title: 'Botón SOS', href: urls.sos, icon: ShieldAlert },
         {
-            title: 'Dashboard',
-            href: dashboardUrl,
-            icon: LayoutGrid,
+            title: 'Acompañamiento',
+            href: urls.acompanamiento,
+            icon: HeartHandshake,
+        },
+        {
+            title: 'Alerta por inactividad',
+            href: urls.inactividad,
+            icon: BellRing,
+        },
+    ];
+
+    const comunidad: NavItem[] = [
+        {
+            title: 'Reportar un incidente',
+            href: urls.reportes,
+            icon: FilePenLine,
+        },
+        {
+            title: 'Dashboard comunitario',
+            href: urls.comunidad,
+            icon: BarChart3,
         },
     ];
 
     const footerNavItems: NavItem[] = [
-        {
-            title: 'Repository',
-            href: 'https://github.com/laravel/react-starter-kit',
-            icon: FolderGit2,
-        },
-        {
-            title: 'Documentation',
-            href: 'https://laravel.com/docs/starter-kits#react',
-            icon: BookOpen,
-        },
+        { title: 'Mi perfil', href: editProfile(), icon: User },
+        { title: 'Privacidad y seguridad', href: editSecurity(), icon: Lock },
     ];
 
     return (
@@ -50,7 +82,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboardUrl} prefetch>
+                            <Link href={urls.dashboard} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -64,7 +96,10 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={inicio} label="Principal" />
+                <NavMain items={planear} label="Planear mi trayecto" />
+                <NavMain items={acompanar} label="Acompañarme" />
+                <NavMain items={comunidad} label="Comunidad" />
             </SidebarContent>
 
             <SidebarFooter>

@@ -23,17 +23,16 @@ export default function TwoFactorChallenge() {
     }>(() => {
         if (showRecoveryInput) {
             return {
-                title: 'Recovery code',
+                title: 'Código de recuperación',
                 description:
-                    'Please confirm access to your account by entering one of your emergency recovery codes.',
+                    'Confirma el acceso a tu cuenta con uno de tus códigos de recuperación.',
                 toggleText: 'login using an authentication code',
             };
         }
 
         return {
-            title: 'Authentication code',
-            description:
-                'Enter the authentication code provided by your authenticator application.',
+            title: 'Código de autenticación',
+            description: 'Ingresa el código de tu aplicación de autenticación.',
             toggleText: 'login using a recovery code',
         };
     }, [showRecoveryInput]);
@@ -51,7 +50,7 @@ export default function TwoFactorChallenge() {
 
     return (
         <>
-            <Head title="Two-factor authentication" />
+            <Head title="Verificación en dos pasos" />
 
             <div className="space-y-6">
                 <Form
@@ -67,7 +66,7 @@ export default function TwoFactorChallenge() {
                                     <Input
                                         name="recovery_code"
                                         type="text"
-                                        placeholder="Enter recovery code"
+                                        placeholder="Código de recuperación"
                                         autoFocus={showRecoveryInput}
                                         required
                                     />

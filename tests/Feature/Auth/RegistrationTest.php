@@ -71,3 +71,19 @@ test('registration cannot assign roles or permissions supplied in the request', 
     expect($user->can('report:moderate'))->toBeFalse();
     expect($user->can('statistics:export'))->toBeFalse();
 });
+
+test('new users can use the app right after registering without verifying their email', function () {
+    $this->post(route('register.store'), [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    $user = User::query()->where('email', 'test@example.com')->firstOrFail();
+
+    expect($user->email_verified_at)->toBeNull();
+
+    $this->get(route('dashboard'))->assertOk();
+    $this->get(route('appearance.edit'))->assertOk();
+});
