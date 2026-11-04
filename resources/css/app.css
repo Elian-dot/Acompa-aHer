@@ -13,6 +13,10 @@
         'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
 
+    --color-purple: var(--purple);
+    --color-warm-white: var(--warm-white);
+    --color-mauve: var(--mauve);
+    --color-rose-soft: var(--rose-soft);
     --color-lila: var(--lila);
     --color-gold: var(--gold);
     --color-plum: var(--plum);

@@ -36,7 +36,7 @@ export default function Login({
                 />
             )}
 
-            <PasskeyVerify />
+            <PasskeyVerify separator="O continúa con tu correo" />
 
             <Form
                 {...store.form()}

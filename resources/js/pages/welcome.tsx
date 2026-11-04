@@ -127,25 +127,25 @@ export default function Welcome() {
             <Head title="AcompañaHer: rutas más informadas para mujeres de noche" />
             <a
                 href="#contenido"
-                className="focus:bg-purple focus:text-warm-white sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:px-4 focus:py-2"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:bg-purple focus:px-4 focus:py-2 focus:text-warm-white"
             >
                 Saltar al contenido
             </a>
 
-            <header className="text-warm-white sticky top-0 z-40 border-b border-white/10 bg-ink/95 backdrop-blur">
+            <header className="sticky top-0 z-40 border-b border-white/10 bg-ink/95 text-warm-white backdrop-blur">
                 <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
                     <a
                         href="#inicio"
-                        className="flex items-center gap-2 font-serif text-lg font-semibold"
+                        className="flex shrink-0 items-center gap-2 font-serif text-lg font-semibold"
                     >
-                        <span className="bg-purple flex size-9 items-center justify-center rounded-xl">
+                        <span className="flex size-9 items-center justify-center rounded-xl bg-purple">
                             <AppLogoIcon className="size-5 fill-current" />
                         </span>
                         AcompañaHer
                     </a>
                     <nav
                         aria-label="Principal"
-                        className="hidden items-center gap-6 text-sm md:flex"
+                        className="hidden items-center gap-5 text-sm whitespace-nowrap xl:flex"
                     >
                         {NAV.map((item) => (
                             <a
@@ -157,16 +157,16 @@ export default function Welcome() {
                             </a>
                         ))}
                     </nav>
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-1 whitespace-nowrap sm:gap-2">
                         <Link
                             href={mapa()}
-                            className="rounded-full px-3 py-2 text-sm font-semibold hover:text-lila"
+                            className="hidden rounded-full px-3 py-2 text-sm font-semibold hover:text-lila md:inline-block"
                         >
                             Mapa público
                         </Link>
                         <Link
                             href={rutas()}
-                            className="hidden rounded-full px-3 py-2 text-sm font-semibold hover:text-lila sm:inline-block"
+                            className="hidden rounded-full px-3 py-2 text-sm font-semibold hover:text-lila md:inline-block"
                         >
                             Rutas peatonales
                         </Link>
@@ -174,7 +174,7 @@ export default function Welcome() {
                         {auth.user ? (
                             <Link
                                 href={dashboardUrl}
-                                className="bg-purple rounded-full px-5 py-2 text-sm font-bold ring-1 ring-lila/50 hover:bg-[#7d33bd]"
+                                className="rounded-full bg-purple px-5 py-2 text-sm font-bold ring-1 ring-lila/50 hover:bg-[#7d33bd]"
                             >
                                 Ir a mi espacio
                             </Link>
@@ -188,7 +188,7 @@ export default function Welcome() {
                                 </Link>
                                 <Link
                                     href={register()}
-                                    className="bg-purple rounded-full px-5 py-2 text-sm font-bold ring-1 ring-lila/50 hover:bg-[#7d33bd]"
+                                    className="rounded-full bg-purple px-5 py-2 text-sm font-bold ring-1 ring-lila/50 hover:bg-[#7d33bd]"
                                 >
                                     Crear cuenta
                                 </Link>
@@ -214,7 +214,7 @@ export default function Welcome() {
                                     información.
                                 </em>
                             </h1>
-                            <p className="text-warm-white/85 mt-6 max-w-xl text-lg">
+                            <p className="mt-6 max-w-xl text-lg text-warm-white/85">
                                 Rutas, reportes de la comunidad y herramientas
                                 de acompañamiento para que decidas con más calma
                                 cómo volver.
@@ -222,7 +222,7 @@ export default function Welcome() {
                             <div className="mt-8 flex flex-wrap gap-3">
                                 <Link
                                     href={auth.user ? dashboardUrl : register()}
-                                    className="bg-purple rounded-full px-7 py-3.5 text-sm font-bold shadow-lg ring-1 ring-lila/50 transition hover:bg-[#7d33bd]"
+                                    className="rounded-full bg-purple px-7 py-3.5 text-sm font-bold shadow-lg ring-1 ring-lila/50 transition hover:bg-[#7d33bd]"
                                 >
                                     {auth.user
                                         ? 'Ir a mi espacio →'
@@ -230,7 +230,7 @@ export default function Welcome() {
                                 </Link>
                                 <a
                                     href="#como-funciona"
-                                    className="border-warm-white/40 hover:bg-warm-white/10 rounded-full border px-7 py-3.5 text-sm font-bold transition"
+                                    className="rounded-full border border-warm-white/40 px-7 py-3.5 text-sm font-bold transition hover:bg-warm-white/10"
                                 >
                                     Cómo funciona
                                 </a>
@@ -324,7 +324,7 @@ export default function Welcome() {
                     className="bg-secondary/60 py-16 dark:bg-muted"
                 >
                     <div className="mx-auto max-w-6xl px-5">
-                        <p className="text-purple text-xs font-bold tracking-[0.18em] uppercase dark:text-lila">
+                        <p className="text-xs font-bold tracking-[0.18em] text-purple uppercase dark:text-lila">
                             Funciones
                         </p>
                         <h2 className="mt-2 text-3xl font-semibold md:text-4xl">
@@ -337,7 +337,7 @@ export default function Welcome() {
                                     className="rounded-3xl border bg-card p-6 shadow-sm"
                                 >
                                     <div className="flex items-center justify-between">
-                                        <span className="text-purple flex size-11 items-center justify-center rounded-2xl bg-secondary dark:text-lila">
+                                        <span className="flex size-11 items-center justify-center rounded-2xl bg-secondary text-purple dark:text-lila">
                                             <f.icono
                                                 className="size-5"
                                                 aria-hidden="true"
@@ -366,7 +366,7 @@ export default function Welcome() {
                     id="como-funciona"
                     className="mx-auto max-w-6xl px-5 py-16"
                 >
-                    <p className="text-purple text-xs font-bold tracking-[0.18em] uppercase dark:text-lila">
+                    <p className="text-xs font-bold tracking-[0.18em] text-purple uppercase dark:text-lila">
                         Cómo funciona
                     </p>
                     <h2 className="mt-2 text-3xl font-semibold md:text-4xl">
@@ -376,7 +376,7 @@ export default function Welcome() {
                         {PASOS.map((p, i) => (
                             <li
                                 key={p.titulo}
-                                className="text-warm-white rounded-3xl bg-ink p-6 dark:bg-plum dark:ring-1 dark:ring-white/15"
+                                className="rounded-3xl bg-ink p-6 text-warm-white dark:bg-plum dark:ring-1 dark:ring-white/15"
                             >
                                 <span className="font-serif text-4xl text-gold">
                                     {i + 1}
@@ -384,7 +384,7 @@ export default function Welcome() {
                                 <h3 className="mt-2 text-xl font-semibold">
                                     {p.titulo}
                                 </h3>
-                                <p className="text-warm-white/80 mt-1">
+                                <p className="mt-1 text-warm-white/80">
                                     {p.texto}
                                 </p>
                             </li>
@@ -397,7 +397,7 @@ export default function Welcome() {
                     className="bg-brand-gradient text-warm-white"
                 >
                     <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 md:grid-cols-[auto_1fr] md:items-center">
-                        <span className="bg-warm-white/10 flex size-16 items-center justify-center rounded-3xl">
+                        <span className="flex size-16 items-center justify-center rounded-3xl bg-warm-white/10">
                             <Lock
                                 className="size-8 text-lila"
                                 aria-hidden="true"
@@ -407,7 +407,7 @@ export default function Welcome() {
                             <h2 className="text-3xl font-semibold">
                                 Tu ubicación es tuya
                             </h2>
-                            <p className="text-warm-white/85 mt-3 max-w-3xl">
+                            <p className="mt-3 max-w-3xl text-warm-white/85">
                                 Pedimos solo los datos necesarios, compartimos
                                 tu ubicación únicamente con quien autorices, no
                                 conservamos historiales más tiempo del necesario
@@ -420,7 +420,7 @@ export default function Welcome() {
                 </section>
 
                 <section id="ayuda" className="mx-auto max-w-3xl px-5 py-16">
-                    <p className="text-purple text-xs font-bold tracking-[0.18em] uppercase dark:text-lila">
+                    <p className="text-xs font-bold tracking-[0.18em] text-purple uppercase dark:text-lila">
                         Preguntas frecuentes
                     </p>
                     <h2 className="mt-2 text-3xl font-semibold md:text-4xl">
@@ -441,7 +441,7 @@ export default function Welcome() {
                                     >
                                         {q.p}
                                         <Plus
-                                            className={`text-purple size-5 shrink-0 transition dark:text-lila ${abierta === i ? 'rotate-45' : ''}`}
+                                            className={`size-5 shrink-0 text-purple transition dark:text-lila ${abierta === i ? 'rotate-45' : ''}`}
                                             aria-hidden="true"
                                         />
                                     </button>
@@ -465,7 +465,7 @@ export default function Welcome() {
                 </section>
             </main>
 
-            <footer className="text-warm-white bg-deep-plum">
+            <footer className="bg-deep-plum text-warm-white">
                 <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-8 text-sm">
                     <p className="font-serif text-lg font-semibold">
                         AcompañaHer
