@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     BarChart3,
     BellRing,
@@ -27,12 +27,14 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useAppUrls } from '@/hooks/use-app-urls';
+import { contacts, moderation } from '@/routes';
 import { edit as editProfile } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
 
 export function AppSidebar() {
     const urls = useAppUrls();
+    const permissions = usePage().props.auth.permissions;
 
     const inicio: NavItem[] = [
         { title: 'Inicio', href: urls.dashboard, icon: Home },
@@ -70,6 +72,21 @@ export function AppSidebar() {
             icon: BarChart3,
         },
     ];
+
+    if (permissions.includes('emergency-contact:manage')) {
+        acompanar.push({
+            title: 'Contactos de emergencia',
+            href: contacts(),
+            icon: User,
+        });
+    }
+    if (permissions.includes('report:moderate')) {
+        comunidad.push({
+            title: 'Moderar reportes',
+            href: moderation(),
+            icon: FilePenLine,
+        });
+    }
 
     const footerNavItems: NavItem[] = [
         { title: 'Mi perfil', href: editProfile(), icon: User },

@@ -2,28 +2,25 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
+use App\Models\EmergencyContact;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PrepareSosRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()?->can('viewAny', EmergencyContact::class) ?? false;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
+    /** @return array<string, array<mixed>> */
     public function rules(): array
     {
         return [
-            //
+            'confirmed' => ['required', 'accepted'],
+            'contact_ids' => ['required', 'array', 'min:1', 'max:10'],
+            'contact_ids.*' => ['required', 'integer', 'distinct'],
+            'latitude' => ['nullable', 'required_with:longitude', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'required_with:latitude', 'numeric', 'between:-180,180'],
         ];
     }
 }

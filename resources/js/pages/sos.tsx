@@ -1,243 +1,321 @@
-import { Head } from '@inertiajs/react';
-import {
-    AlertTriangle,
-    MapPinOff,
-    Phone,
-    ShieldAlert,
-    WifiOff,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Head, Link, useHttp } from '@inertiajs/react';
+import { Phone, ShieldAlert } from 'lucide-react';
+import { useEffect, useEffectEvent, useState } from 'react';
+import FormErrors from '@/components/ruta/form-errors';
 import PageHeader from '@/components/ruta/page-header';
 import SectionCard from '@/components/ruta/section-card';
-import SimulationBanner from '@/components/ruta/simulation-banner';
 import { Button } from '@/components/ui/button';
-import { CONTACTOS_EJEMPLO } from '@/lib/ruta';
+import { useGeolocation } from '@/hooks/use-geolocation';
+import { requestErrorMessage } from '@/lib/safety';
+import { contacts } from '@/routes';
+import { index } from '@/routes/api/v1/emergency-contacts';
+import { store } from '@/routes/api/v1/sos';
+import type { Contact, Coordinate } from '@/types/safety';
 
-type Fase = 'inactivo' | 'cuenta-atras' | 'enviando' | 'resultado';
+type SosForm = {
+    confirmed: boolean;
+    contact_ids: number[];
+    latitude: number | null;
+    longitude: number | null;
+};
 
-const SEGUNDOS = 5;
-const MENSAJE =
-    'Necesito ayuda. Esta es mi ubicación actual. Por favor, comunícate conmigo.';
+type PreparedSos = {
+    data: {
+        id: number;
+        name: string;
+        phone: string;
+        call_url: string;
+        sms_url: string;
+        status: 'prepared';
+    }[];
+    message: string;
+    notice: string;
+};
 
-export default function Sos() {
-    const [fase, setFase] = useState<Fase>('inactivo');
-    const [segundos, setSegundos] = useState(SEGUNDOS);
+export default function Sos({
+    canManageContacts,
+}: {
+    canManageContacts: boolean;
+}) {
+    const list = useHttp<Record<string, never>, { data: Contact[] }>({});
+    const form = useHttp<SosForm, PreparedSos>({
+        confirmed: false,
+        contact_ids: [],
+        latitude: null,
+        longitude: null,
+    });
+    const [message, setMessage] = useState('');
+    const [confirming, setConfirming] = useState(false);
+    const [prepared, setPrepared] = useState<PreparedSos | null>(null);
+    const location = useGeolocation();
+    const load = useEffectEvent(() => {
+        if (canManageContacts)
+            void list
+                .get(index.url())
+                .catch((error: unknown) =>
+                    setMessage(requestErrorMessage(error)),
+                );
+    });
+    const cancel = useEffectEvent(() => list.cancel());
     useEffect(() => {
-        if (fase === 'cuenta-atras') {
-            if (segundos <= 0) {
-                setFase('enviando');
-
-                return;
-            }
-
-            const id = setTimeout(() => setSegundos((s) => s - 1), 1000);
-
-            return () => clearTimeout(id);
-        }
-
-        if (fase === 'enviando') {
-            const id = setTimeout(() => setFase('resultado'), 1500);
-
-            return () => clearTimeout(id);
-        }
-    }, [fase, segundos]);
-
-    const iniciar = () => {
-        setSegundos(SEGUNDOS);
-        setFase('cuenta-atras');
-    };
-
-    const cancelar = () => setFase('inactivo');
-
+        load();
+        return () => cancel();
+    }, [canManageContacts]);
+    function setLocation(point: Coordinate) {
+        form.setData((current) => ({ ...current, ...point }));
+    }
+    function prepare() {
+        setMessage('');
+        form.transform((data) => ({ ...data, confirmed: true }));
+        void form
+            .post(store.url())
+            .then((result) => {
+                setPrepared(result);
+                setConfirming(false);
+            })
+            .catch((error: unknown) => setMessage(requestErrorMessage(error)));
+    }
     return (
         <>
-            <Head title="Botón SOS" />
-            <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-4 md:p-6">
+            <Head title="Pedir ayuda" />
+            <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4 md:p-6">
                 <PageHeader
-                    eyebrow="Acompañarme"
-                    title="Botón SOS"
-                    description="Acceso rápido a números de emergencia y a tus contactos de confianza. Diseñado para usarse con una sola mano y bajo estrés."
+                    eyebrow="Emergencia"
+                    title="Pedir ayuda ahora"
+                    description="Llama o prepara un SMS para tus contactos. Cada envío se confirma en tu dispositivo; esta aplicación no puede comprobar su entrega."
                 />
-
-                <SimulationBanner>
-                    Este botón funciona en simulación: no llama ni escribe a
-                    ningún servicio ni persona real. Si estás en peligro
-                    inmediato, llama al 123 desde tu teléfono.
-                </SimulationBanner>
-
-                <a
-                    href="tel:123"
-                    className="flex items-center justify-center gap-3 rounded-3xl bg-[#b42336] p-6 text-xl font-bold text-white shadow-lg transition hover:bg-[#9a1d2e]"
-                >
-                    <Phone className="size-6" aria-hidden="true" />
-                    Llamar al 123 (emergencias)
-                </a>
-
-                <SectionCard
-                    headingId="que-hace"
-                    title="¿Qué hará el botón SOS?"
-                >
-                    <ol className="list-decimal space-y-2 pl-5 text-sm">
-                        <li>
-                            Tienes {SEGUNDOS} segundos para cancelar antes de
-                            que se ejecute.
-                        </li>
-                        <li>Obtiene tu ubicación GPS aproximada.</li>
-                        <li>
-                            Envía este mensaje a tus contactos de emergencia:
-                        </li>
-                    </ol>
-                    <blockquote className="border-purple mt-3 rounded-2xl border-l-4 bg-secondary/60 p-4 text-sm italic">
-                        “{MENSAJE}”
-                    </blockquote>
-                    <ul
-                        className="mt-4 flex flex-wrap gap-2"
-                        aria-label="Contactos de emergencia"
-                    >
-                        {CONTACTOS_EJEMPLO.map((c) => (
-                            <li
-                                key={c.id}
-                                className="flex items-center gap-2 rounded-full border bg-background px-3 py-1.5 text-sm"
-                            >
-                                <span
-                                    className="bg-purple text-warm-white flex size-6 items-center justify-center rounded-full text-[10px] font-bold"
-                                    aria-hidden="true"
-                                >
-                                    {c.iniciales}
-                                </span>
-                                {c.nombre}
-                            </li>
-                        ))}
-                    </ul>
+                <SectionCard headingId="llamar" title="Llamar">
+                    <Button asChild variant="destructive" size="lg">
+                        <a href="tel:123">
+                            <Phone aria-hidden="true" /> Abrir llamada al 123
+                        </a>
+                    </Button>
+                    <p className="mt-3 text-sm text-muted-foreground">
+                        Se abrirá la aplicación de llamadas del dispositivo. Si
+                        no admite llamadas, usa otro teléfono.
+                    </p>
                 </SectionCard>
-
-                <section
-                    aria-labelledby="activar"
-                    className="rounded-3xl border bg-card p-6 text-center shadow-sm"
-                    aria-live="polite"
-                >
-                    <h2 id="activar" className="sr-only">
-                        Activar SOS simulado
-                    </h2>
-
-                    {fase === 'inactivo' && (
-                        <>
-                            <button
-                                type="button"
-                                onClick={iniciar}
-                                className="mx-auto flex size-44 flex-col items-center justify-center gap-2 rounded-full bg-[#b42336] text-white shadow-xl ring-8 ring-[#b42336]/25 transition hover:bg-[#9a1d2e] focus-visible:ring-lila"
-                            >
-                                <ShieldAlert
-                                    className="size-12"
-                                    aria-hidden="true"
-                                />
-                                <span className="text-2xl font-bold">SOS</span>
-                                <span className="text-xs font-medium">
-                                    Simulación
-                                </span>
-                            </button>
-                            <p className="mt-4 text-sm text-muted-foreground">
-                                Toca para iniciar la cuenta atrás de {SEGUNDOS}{' '}
-                                segundos.
-                            </p>
-                        </>
-                    )}
-
-                    {fase === 'cuenta-atras' && (
-                        <div className="space-y-4">
-                            <p className="text-6xl font-bold tabular-nums">
-                                {segundos}
-                            </p>
-                            <p className="text-lg font-semibold">
-                                Enviando alerta simulada en {segundos} segundos…
-                            </p>
-                            <Button
-                                size="lg"
-                                variant="outline"
-                                className="rounded-full"
-                                onClick={cancelar}
-                            >
-                                Cancelar
-                            </Button>
-                        </div>
-                    )}
-
-                    {fase === 'enviando' && (
-                        <p className="text-lg font-semibold">
-                            Obteniendo ubicación y preparando el mensaje…
-                        </p>
-                    )}
-
-                    {fase === 'resultado' && (
-                        <div className="space-y-4">
-                            <p className="text-lg font-semibold">
-                                Simulación completada
-                            </p>
-                            <ul className="mx-auto max-w-sm space-y-2 text-left text-sm">
-                                {CONTACTOS_EJEMPLO.map((c) => (
+                <FormErrors errors={form.errors} message={message} />
+                {!canManageContacts ? (
+                    <FormErrors message="Tu cuenta no tiene permiso para gestionar contactos de emergencia." />
+                ) : (
+                    <>
+                        <SectionCard
+                            headingId="contactos-sos"
+                            title="Avisar a mis contactos"
+                            action={
+                                <Link
+                                    href={contacts()}
+                                    className="text-sm font-semibold underline"
+                                >
+                                    Gestionar contactos
+                                </Link>
+                            }
+                        >
+                            {list.processing && (
+                                <p role="status">Consultando tus contactos…</p>
+                            )}
+                            {list.response?.data.length === 0 && (
+                                <p>Añade un contacto para preparar un aviso.</p>
+                            )}
+                            <ul className="space-y-3">
+                                {list.response?.data.map((contact) => (
                                     <li
-                                        key={c.id}
-                                        className="flex items-center justify-between rounded-xl border p-3"
+                                        key={contact.id}
+                                        className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4"
                                     >
-                                        <span>{c.nombre}</span>
-                                        <span className="font-semibold">
-                                            No enviado (simulación)
-                                        </span>
+                                        <label className="flex items-center gap-3">
+                                            <input
+                                                type="checkbox"
+                                                className="size-5 accent-primary"
+                                                checked={form.data.contact_ids.includes(
+                                                    contact.id,
+                                                )}
+                                                disabled={
+                                                    form.processing ||
+                                                    prepared !== null
+                                                }
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'contact_ids',
+                                                        event.target.checked
+                                                            ? [
+                                                                  ...form.data
+                                                                      .contact_ids,
+                                                                  contact.id,
+                                                              ]
+                                                            : form.data.contact_ids.filter(
+                                                                  (id) =>
+                                                                      id !==
+                                                                      contact.id,
+                                                              ),
+                                                    )
+                                                }
+                                            />
+                                            <span>
+                                                <strong>{contact.name}</strong>
+                                                <span className="block text-sm text-muted-foreground">
+                                                    {contact.phone}
+                                                </span>
+                                            </span>
+                                        </label>
+                                        <Button asChild variant="outline">
+                                            <a href={`tel:${contact.phone}`}>
+                                                <Phone aria-hidden="true" />{' '}
+                                                Llamar
+                                            </a>
+                                        </Button>
                                     </li>
                                 ))}
                             </ul>
-                            <p className="text-sm text-muted-foreground">
-                                En la versión real verías aquí “Entregado” o
-                                “Falló” por contacto. Nunca mostraremos
-                                “enviado” sin confirmarlo.
-                            </p>
-                            <Button
-                                className="rounded-full"
-                                onClick={() => setFase('inactivo')}
+                            {!prepared && (
+                                <div className="mt-5 space-y-4">
+                                    <Button
+                                        variant="outline"
+                                        disabled={
+                                            location.locating || form.processing
+                                        }
+                                        onClick={() =>
+                                            location.locate(setLocation)
+                                        }
+                                    >
+                                        {location.locating
+                                            ? 'Buscando ubicación…'
+                                            : 'Incluir mi ubicación en el mensaje'}
+                                    </Button>
+                                    <p
+                                        role="status"
+                                        className="text-sm text-muted-foreground"
+                                    >
+                                        {location.message}
+                                    </p>
+                                    {form.data.latitude !== null && (
+                                        <Button
+                                            variant="ghost"
+                                            onClick={() =>
+                                                form.setData((data) => ({
+                                                    ...data,
+                                                    latitude: null,
+                                                    longitude: null,
+                                                }))
+                                            }
+                                        >
+                                            Quitar ubicación
+                                        </Button>
+                                    )}
+                                    <p className="rounded-2xl bg-secondary p-4 text-sm">
+                                        Necesito ayuda.{' '}
+                                        {form.data.latitude !== null
+                                            ? 'Esta es mi ubicación aproximada: [enlace al mapa].'
+                                            : 'No pude obtener mi ubicación.'}
+                                    </p>
+                                    {!confirming ? (
+                                        <Button
+                                            variant="destructive"
+                                            size="lg"
+                                            disabled={
+                                                form.data.contact_ids.length ===
+                                                0
+                                            }
+                                            onClick={() => setConfirming(true)}
+                                        >
+                                            <ShieldAlert aria-hidden="true" />{' '}
+                                            Preparar aviso
+                                        </Button>
+                                    ) : (
+                                        <div
+                                            role="region"
+                                            aria-label="Confirmar preparación del aviso"
+                                            className="space-y-4 rounded-2xl border-2 border-destructive p-5"
+                                        >
+                                            <h3 className="text-lg font-semibold">
+                                                ¿Preparar el mensaje para los
+                                                contactos seleccionados?
+                                            </h3>
+                                            <p className="text-sm">
+                                                Incluiremos{' '}
+                                                {form.data.latitude !== null
+                                                    ? 'tu ubicación y el mensaje'
+                                                    : 'el mensaje sin ubicación'}
+                                                . Todavía no se ha enviado nada.
+                                                Después tendrás que abrir y
+                                                enviar cada SMS.
+                                            </p>
+                                            <div className="flex flex-wrap gap-3">
+                                                <Button
+                                                    variant="destructive"
+                                                    disabled={form.processing}
+                                                    onClick={prepare}
+                                                >
+                                                    {form.processing
+                                                        ? 'Preparando…'
+                                                        : 'Sí, preparar mensajes'}
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    disabled={form.processing}
+                                                    onClick={() =>
+                                                        setConfirming(false)
+                                                    }
+                                                >
+                                                    Cancelar
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </SectionCard>
+                        {prepared && (
+                            <SectionCard
+                                headingId="mensajes"
+                                title="Mensajes preparados, pendientes de envío"
                             >
-                                Volver a empezar
-                            </Button>
-                        </div>
-                    )}
-                </section>
-
-                <SectionCard
-                    headingId="alternativas"
-                    title="Si algo falla"
-                    description="Alternativas cuando no hay GPS, conexión o batería."
-                >
-                    <ul className="grid gap-3 sm:grid-cols-3">
-                        <li className="rounded-2xl border p-4 text-sm">
-                            <MapPinOff
-                                className="text-purple mb-2 size-5 dark:text-lila"
-                                aria-hidden="true"
-                            />
-                            <strong>Sin GPS:</strong> el mensaje se enviará sin
-                            ubicación y avisará que no pudimos obtenerla.
-                        </li>
-                        <li className="rounded-2xl border p-4 text-sm">
-                            <WifiOff
-                                className="text-purple mb-2 size-5 dark:text-lila"
-                                aria-hidden="true"
-                            />
-                            <strong>Sin conexión:</strong> intenta un SMS o
-                            llama directamente al 123.
-                        </li>
-                        <li className="rounded-2xl border p-4 text-sm">
-                            <AlertTriangle
-                                className="text-purple mb-2 size-5 dark:text-lila"
-                                aria-hidden="true"
-                            />
-                            <strong>Batería baja:</strong> prioriza una llamada;
-                            es más rápida que cualquier mensaje.
-                        </li>
-                    </ul>
-                    <p className="mt-4 text-sm text-muted-foreground">
-                        Línea Púrpura (orientación a mujeres): verifica los
-                        canales, horarios y cobertura de tu municipio antes de
-                        depender de ella.
-                    </p>
-                </SectionCard>
+                                <p role="status" className="text-sm">
+                                    {prepared.notice}
+                                </p>
+                                <blockquote className="mt-4 rounded-2xl bg-secondary p-4 text-sm break-words">
+                                    {prepared.message}
+                                </blockquote>
+                                <ul className="mt-4 space-y-3">
+                                    {prepared.data.map((contact) => (
+                                        <li
+                                            key={contact.id}
+                                            className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4"
+                                        >
+                                            <span>
+                                                {contact.name}
+                                                <span className="block text-sm text-muted-foreground">
+                                                    Entrega sin confirmar
+                                                </span>
+                                            </span>
+                                            <Button asChild>
+                                                <a href={contact.sms_url}>
+                                                    Abrir SMS
+                                                </a>
+                                            </Button>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <p className="mt-3 text-sm text-muted-foreground">
+                                    Si el dispositivo no permite abrir SMS,
+                                    llama directamente o copia el mensaje en tu
+                                    aplicación de mensajería.
+                                </p>
+                                <Button
+                                    className="mt-4"
+                                    variant="outline"
+                                    onClick={() => {
+                                        setPrepared(null);
+                                        form.reset();
+                                    }}
+                                >
+                                    Preparar otro aviso
+                                </Button>
+                            </SectionCard>
+                        )}
+                    </>
+                )}
             </div>
         </>
     );

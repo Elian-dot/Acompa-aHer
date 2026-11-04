@@ -14,6 +14,7 @@ import {
 import { useState } from 'react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { dashboard, login, register } from '@/routes';
+import { mapa, rutas } from '@/routes/public';
 
 const NAV = [
     { href: '#inicio', texto: 'Inicio' },
@@ -156,6 +157,18 @@ export default function Welcome() {
                         ))}
                     </nav>
                     <div className="flex items-center gap-2">
+                        <Link
+                            href={mapa()}
+                            className="rounded-full px-3 py-2 text-sm font-semibold hover:text-lila"
+                        >
+                            Mapa público
+                        </Link>
+                        <Link
+                            href={rutas()}
+                            className="hidden rounded-full px-3 py-2 text-sm font-semibold hover:text-lila sm:inline-block"
+                        >
+                            Rutas peatonales
+                        </Link>
                         {auth.user ? (
                             <Link
                                 href={dashboardUrl}

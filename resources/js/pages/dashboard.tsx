@@ -14,9 +14,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import PendingInvitationsModal from '@/components/pending-invitations-modal';
-import DataNotice from '@/components/ruta/data-notice';
 import SectionCard from '@/components/ruta/section-card';
-import SimulationBanner from '@/components/ruta/simulation-banner';
 import { useAppUrls } from '@/hooks/use-app-urls';
 import { dashboard } from '@/routes';
 import type { DashboardInvitation } from '@/types';
@@ -39,8 +37,8 @@ const PASOS_INICIO = [
     },
     {
         id: 'sos',
-        titulo: 'Practica el botón SOS en modo simulación',
-        detalle: 'No contacta a servicios reales; sirve para familiarizarte.',
+        titulo: 'Revisa cómo pedir ayuda',
+        detalle: 'Las llamadas y los SMS se abren en tu dispositivo y requieren confirmación.',
     },
 ];
 
@@ -237,17 +235,9 @@ export default function Dashboard({ pendingInvitations = [] }: Props) {
                     </SectionCard>
                 </div>
 
-                <SimulationBanner>
-                    Los datos de zonas, rutas y horarios son de ejemplo. El
-                    botón SOS y las alertas funcionan en simulación y no
-                    contactan a servicios de emergencia reales. Si estás en
-                    peligro inmediato, llama al 123.
-                </SimulationBanner>
-
-                <DataNotice periodo="Últimos 30 días" reportes={140}>
-                    Esta vista resume reportes comunitarios. No los interpretes
-                    como una garantía de seguridad o de peligro en un lugar.
-                </DataNotice>
+                <aside className="rounded-2xl border bg-secondary/50 p-4 text-sm text-muted-foreground">
+                    Reportes, moderación, contactos, mapa y consulta de rutas están conectados al servidor. El SOS abre llamadas o prepara SMS reales, cuyo envío debes confirmar en tu dispositivo. Los módulos de acompañamiento, inactividad, horarios y estadísticas conservan sus avisos de demostración mientras se implementan.
+                </aside>
             </div>
         </>
     );

@@ -179,7 +179,7 @@ test('the initial category catalog can be seeded repeatedly without fabricated r
     $this->seed(ReportCategorySeeder::class);
     $this->seed(ReportCategorySeeder::class);
 
-    $this->assertDatabaseCount('report_categories', 1);
+    $this->assertDatabaseCount('report_categories', 6);
     $this->assertDatabaseHas('report_categories', ['code' => 'other', 'is_active' => true]);
     $this->assertDatabaseCount('reports', 0);
     $this->assertDatabaseCount('zones', 0);

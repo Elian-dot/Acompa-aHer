@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ReportStatus;
+use Carbon\CarbonImmutable;
 use Database\Factories\ReportFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -15,6 +16,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
+/**
+ * @property ReportStatus $status
+ * @property CarbonImmutable $occurred_at
+ * @property CarbonImmutable|null $moderated_at
+ * @property CarbonImmutable|null $anonymized_at
+ */
 #[Fillable(['report_category_id', 'is_anonymous', 'location', 'occurred_at', 'description'])]
 #[Hidden(['user_id', 'location', 'description', 'moderated_by'])]
 class Report extends Model

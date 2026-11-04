@@ -7,14 +7,17 @@ use Illuminate\Database\Seeder;
 
 class ReportCategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        ReportCategory::query()->firstOrCreate(['code' => 'other'], [
-            'name' => 'Otro incidente',
-            'is_active' => true,
-        ]);
+        foreach ([
+            'other' => 'Otro incidente',
+            'lighting' => 'Poca iluminación',
+            'harassment' => 'Acoso verbal',
+            'pursuit' => 'Seguimiento o persecución',
+            'theft' => 'Robo o intento de robo',
+            'low_foot_traffic' => 'Calle sin tránsito',
+        ] as $code => $name) {
+            ReportCategory::query()->firstOrCreate(['code' => $code], ['name' => $name, 'is_active' => true]);
+        }
     }
 }

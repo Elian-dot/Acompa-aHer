@@ -2,28 +2,25 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
+use App\Models\Report;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ModerateReportRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()?->can('moderate', Report::class) ?? false;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
+    /** @return array<string, array<mixed>> */
     public function rules(): array
     {
         return [
-            //
+            'status' => ['required', Rule::in(['verified', 'discarded'])],
+            'privacy_reviewed' => ['required_if:status,verified', 'accepted_if:status,verified'],
+            'coverage_reviewed' => ['required_if:status,verified', 'accepted_if:status,verified'],
+            'moderation_reason' => ['exclude_unless:status,discarded', 'required', Rule::in(array_keys(config('safety.discard_reasons')))],
         ];
     }
 }
